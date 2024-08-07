@@ -137,3 +137,29 @@ func EditPassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 }
+func GetUserInfo(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := session.Get("userID")
+	if userID == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var user models.Utilisateur
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = utils.UserCollection.FindOne(ctx, bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"phone": user.Phone})
+}

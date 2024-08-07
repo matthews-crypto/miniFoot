@@ -24,10 +24,10 @@ func InitializeRoutes(router *gin.Engine) {
 		c.HTML(200, "proprio_dashboard.html", nil)
 	})
 
-	// Groupe pour les routes utilisateur authentifié
 	userGroup := router.Group("/user")
 	userGroup.Use(middleware.AuthRequired)
 	{
 		userGroup.POST("/edit_password", controllers.EditPassword)
+		userGroup.GET("/info", controllers.GetUserInfo)
 	}
 }
